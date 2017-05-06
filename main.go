@@ -15,10 +15,8 @@ func main() {
   }
 
   router.GET("/", func(c *gin.Context) {
-    c.String(http.StatusOK, "Hola mundo")
+    c.JSON(http.StatusOK, gin.H{ "message": "hola mundo" })
   })
 
   router.Run(":" + port)
-
 }
-// This is a comment to test CI
