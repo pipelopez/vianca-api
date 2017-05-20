@@ -40,7 +40,8 @@ func main() {
 	var results []flight
 
 	router.GET("/search/origin/:ciudadori", func(c *gin.Context) {
-
+	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+	c.Next()
 	ciudadori := c.Param("ciudadori")
 	err = cc.Find(bson.M{"origin": ciudadori}).All(&results)
 	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
