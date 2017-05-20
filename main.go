@@ -8,6 +8,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+
 )
 
 type flight struct {
@@ -24,6 +25,8 @@ func main() {
 
 	port := os.Getenv("PORT")
 	router := gin.Default()
+	router.Use(cors.Default())
+
 
 	if port == "" {
 		port = "8080"
@@ -39,7 +42,7 @@ func main() {
 	var results []flight
 
 	router.GET("/search/origin/:ciudadori", func(c *gin.Context) {
-	
+
 	ciudadori := c.Param("ciudadori")
 	err = cc.Find(bson.M{"origin": ciudadori}).All(&results)
 
@@ -51,5 +54,5 @@ func main() {
 	})
 
 	router.Run(":" + port)
-	
+
 }
