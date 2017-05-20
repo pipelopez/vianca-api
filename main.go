@@ -8,7 +8,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
-
+	"gopkg.in/gin-contrib/cors.v1"
 )
 
 type flight struct {
