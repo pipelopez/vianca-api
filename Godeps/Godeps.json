@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/dhmenesesl/vianpa_prueba",
+	"ImportPath": "github.com/pipelopez/vianca-api",
 	"GoVersion": "go1.8",
 	"GodepVersion": "v79",
 	"Packages": [
