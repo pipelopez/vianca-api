@@ -34,6 +34,7 @@ func main() {
 		panic(err)
 	}
 	defer session.Close()
+
 	cc := session.DB("vianca-db").C("vuelo")
 	var results []flight
 
