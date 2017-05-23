@@ -8,16 +8,20 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+	"fmt"
+	"time"
 )
 
-type flight struct {
-
-	Flightcode  string
-	Origin string
-	Destination string
-	Price string
-	Currency string
-
+type Flight struct {
+	Id bson.ObjectId `json:"id" bson:"_id"`
+	FlightCode string `json:"flightCode" bson:"flightCode"`
+	Origin string `json:"origin" bson:"origin"`
+  Destination string `json:"destination" bson:"destination"`
+  Price float32 `json:"price" bson:"price"`
+  Currency string `json:"currency" bson:"currency"`
+  Date time.Time `json:"date" bson:"date"`
+	Passengers int `json:"passengers" bson:"passengers"`
+	Capacity int `json:"capacity" bson:"capacity"`
 }
 
 func main() {
@@ -37,7 +41,15 @@ func main() {
 	defer session.Close()
 
 	cc := session.DB("vianca-db").C("vuelo")
-	var results []flight
+	var results []Flight
+
+	router.POST("/reserve", func(c *gin.Context) {
+		var json Flight
+		c.BindJSON(&json)
+		fmt.Println(json)
+		// fmt.Println(json.currency)
+		fmt.Println(json.Currency)
+	})
 
 	router.GET("/search/origin/:ciudadori", func(c *gin.Context) {
 	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
