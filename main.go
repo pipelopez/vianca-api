@@ -8,7 +8,6 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/gin-contrib/cors.v1"
 )
 
 type flight struct {
@@ -25,11 +24,10 @@ func main() {
 
 	port := os.Getenv("PORT")
 	router := gin.Default()
-	router.Use(cors.Default())
 
 
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 
 	session, err := mgo.Dial("mongodb://admin:admin@ds147551.mlab.com:47551/vianca-db")
@@ -45,6 +43,10 @@ func main() {
 
 	ciudadori := c.Param("ciudadori")
 	err = cc.Find(bson.M{"origin": ciudadori}).All(&results)
+	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE,POST, PUT")
+
+  c.Next()
 
 	if err != nil {
 		log.Fatal(err)
