@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"log"
 	"net/http"
 	"os"
@@ -13,19 +12,35 @@ import (
 )
 
 type Flight struct {
-	Id bson.ObjectId `json:"id" bson:"_id"`
-	FlightCode string `json:"flightCode" bson:"flightCode"`
-	Origin string `json:"origin" bson:"origin"`
+  Id bson.ObjectId `json:"id" bson:"_id"`
+  FlightCode string `json:"flightCode" bson:"flightCode"`
+  Origin string `json:"origin" bson:"origin"`
   Destination string `json:"destination" bson:"destination"`
   Price float32 `json:"price" bson:"price"`
   Currency string `json:"currency" bson:"currency"`
   Date time.Time `json:"date" bson:"date"`
-	Passengers int `json:"passengers" bson:"passengers"`
-	Capacity int `json:"capacity" bson:"capacity"`
+  Passengers int `json:"passengers" bson:"passengers"`
+  Capacity int `json:"capacity" bson:"capacity"`
 }
 
-func main() {
+type FlightQuery struct {
+	DepartureDate string
+	ArrivalDate string
+	Origin string
+	Destination string
+	Passengers int
+	RoundTrip bool
+}
 
+const
+const (
+	code = 12345
+	name = "Vianca Airlines"
+	thumbnail = "https://image.freepik.com/icones-gratuites/avion-noir_318-31722.jpg"
+	layoutDate = "2006-01-02"
+)
+
+func main() {
 	port := os.Getenv("PORT")
 	router := gin.Default()
 
@@ -40,7 +55,7 @@ func main() {
 	}
 	defer session.Close()
 
-	cc := session.DB("vianca-db").C("vuelo")
+	flightConection := session.DB("vianca-db").C("vuelo")
 	var results []Flight
 
 	router.POST("/reserve", func(c *gin.Context) {
@@ -51,23 +66,32 @@ func main() {
 		fmt.Println(json.Currency)
 	})
 
-	router.GET("/search/origin/:ciudadori", func(c *gin.Context) {
-	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
-	c.Next()
-	ciudadori := c.Param("ciudadori")
-	err = cc.Find(bson.M{"origin": ciudadori}).All(&results)
-	c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
-	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE,POST, PUT")
+	router.POST("/search", func(c *gin.Context) {
+		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		c.Next()
+		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
 
-  c.Next()
+		var query FlightQuery
+		c.BindJSON(&query)
+		fmt.Println(query)
+		err = flightConection.Find(bson.M{"origin": query.Origin, "destination": query.Destination, "passengers": query.Passengers, "date": {$lt: parseDate(query.DepartureDate)}).All(&results)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		c.JSON(http.StatusOK, gin.H{"code": "12345", "name": "Vianca Airlines", "thumbnail":"https://image.freepik.com/icones-gratuites/avion-noir_318-31722.jpg", "results": results})
+		c.JSON(http.StatusOK, gin.H{"code": code, "name": name, "thumbnail": thumbnail, "results": results})
 	})
 
 	router.Run(":" + port)
 
+}
+
+func parseDate(date string) Time {
+	dateArray := strings.Split(date, "-")
+  inverseDateArray := []string{dateArray[2], dateArray[1], dateArray[0]}
+  correctDate := strings.Join(inverseDateArray, "-")
+  t, _ := time.Parse("2006-01-02", correctDate)
+  return t
 }
