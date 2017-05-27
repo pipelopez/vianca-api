@@ -89,7 +89,7 @@ func main() {
 
 		c.BindJSON(&query)
 		fmt.Println(query)
-		err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gt": parseDate(query.DepartureDate)}}).All(&results)
+		err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gt": parseDate(query.DepartureDate)}}).Sort("date").All(&results)
 		fmt.Println(parseDate(query.DepartureDate))
 		if err != nil {
 			log.Fatal(err)
