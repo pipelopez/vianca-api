@@ -78,7 +78,7 @@ func main() {
 		if err != nil{
 				log.Fatal(err)
 			}
-		//fmt.Println(resultsToken)
+		fmt.Println(resultsToken)
 		c.JSON(http.StatusOK, gin.H{"message": "This are your reserves", "data": resultsToken})
 	})
 
