@@ -73,7 +73,7 @@ func main() {
 
 		CORS(c)
 		token := c.Param("token")
-		//fmt.Println(token)
+		fmt.Println(token)
 		err = flightConection2.Find(bson.M{"token": token}).All(&resultsToken)
 		if err != nil{
 				log.Fatal(err)
