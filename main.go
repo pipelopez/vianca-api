@@ -64,8 +64,23 @@ func main() {
 
 	flightConection := session.DB("vianca-db").C("vuelo")
 	flightConection2 := session.DB("vianca-db").C("reservas")
+
 	var results []Flight
 	var variable Flight
+	var resultsToken []reserveStruct
+
+	router.POST("/myReserves/:token", func (c *gin.Context) {
+
+		CORS(c)
+		token := c.Param("token")
+		//fmt.Println(token)
+		err = flightConection2.Find(bson.M{"token": token}).All(&resultsToken)
+		if err != nil{
+				log.Fatal(err)
+			}
+		//fmt.Println(resultsToken)
+		c.JSON(http.StatusOK, gin.H{"message": "This are your reserves", "data": resultsToken})
+	})
 
 	router.POST("/inserts", func(c *gin.Context) {
 
@@ -85,12 +100,20 @@ func main() {
 		CORS(c)
 		var json reserveStruct
 		c.BindJSON(&json)
+
+		if json.Token == "Darwin" {
+
 		err = flightConection2.Insert(&reserveStruct{json.FlightCode, json.Passengers, json.Token})
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println(json)
 		c.JSON(http.StatusOK, gin.H{"messages": "R"})
+		}else{
+			c.JSON(http.StatusOK, gin.H{"messages": "NF"})
+		}
+
+
 	})
 
 	router.POST("/search", func(c *gin.Context) {
@@ -99,10 +122,10 @@ func main() {
 		var query FlightQuery
 
 		c.BindJSON(&query)
-		fmt.Println("Fecha de regreso", query.RoundTrip)
+		//fmt.Println("Fecha de regreso", query.RoundTrip)
 
 		if query.RoundTrip{
-			fmt.Println(query)
+			//fmt.Println(query)
 
 			err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gte": parseDate(query.DepartureDate)}}).Sort("price").All(&results)
 			fmt.Println(parseDate(query.DepartureDate))
