@@ -32,6 +32,13 @@ type FlightQuery struct {
 	Passengers int
 	RoundTrip bool
 }
+
+type reserveStruct struct {
+
+	FlightCode string
+	Passengers int
+	Token string
+}
 const (
 	code = 12345
 	name = "Vianca Airlines"
@@ -56,8 +63,9 @@ func main() {
 	defer session.Close()
 
 	flightConection := session.DB("vianca-db").C("vuelo")
+	flightConection2 := session.DB("vianca-db").C("reservas")
 	var results []Flight
-
+	var variable Flight
 
 	router.POST("/inserts", func(c *gin.Context) {
 
@@ -75,11 +83,14 @@ func main() {
 	router.POST("/reserve", func(c *gin.Context) {
 
 		CORS(c)
-		var json Flight
+		var json reserveStruct
 		c.BindJSON(&json)
+		err = flightConection2.Insert(&reserveStruct{json.FlightCode, json.Passengers, json.Token})
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Println(json)
-		// fmt.Println(json.currency)
-		fmt.Println(json.Currency)
+		c.JSON(http.StatusOK, gin.H{"messages": "R"})
 	})
 
 	router.POST("/search", func(c *gin.Context) {
@@ -88,14 +99,33 @@ func main() {
 		var query FlightQuery
 
 		c.BindJSON(&query)
-		fmt.Println(query)
-		err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gt": parseDate(query.DepartureDate)}}).Sort("date").All(&results)
-		fmt.Println(parseDate(query.DepartureDate))
-		if err != nil {
-			log.Fatal(err)
-		}
+		fmt.Println("Fecha de regreso", query.RoundTrip)
 
-		c.JSON(http.StatusOK, gin.H{"code": code, "name": name, "thumbnail": thumbnail, "results": results})
+		if query.RoundTrip{
+			fmt.Println(query)
+
+			err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gte": parseDate(query.DepartureDate)}}).Sort("price").All(&results)
+			fmt.Println(parseDate(query.DepartureDate))
+			if err != nil{
+				log.Fatal(err)
+			}
+			err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Destination, "destination": query.Origin, "date": bson.M{"$gte": parseDate(query.ArrivalDate)}}).One(&variable)
+			if err != nil{
+				log.Fatal(err)
+			}
+			c.JSON(http.StatusOK, gin.H{"code": code, "name": name, "thumbnail": thumbnail, "results": results, "returnFlight": variable})
+
+			}else{
+			fmt.Println(query)
+
+			err = flightConection.Find(bson.M{"passengers": bson.M{"$gte": query.Passengers}, "origin": query.Origin, "destination": query.Destination, "date": bson.M{"$gt": parseDate(query.DepartureDate)}}).Sort("date").All(&results)
+			fmt.Println(parseDate(query.DepartureDate))
+
+			if err != nil {
+				log.Fatal(err)
+			}
+			c.JSON(http.StatusOK, gin.H{"code": code, "name": name, "thumbnail": thumbnail, "results": results})
+		}
 	})
 
 	router.OPTIONS("/", func(c *gin.Context) {
