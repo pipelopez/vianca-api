@@ -158,6 +158,13 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"code": "Hola vianca"})
 	})
 
+	router.GET("/test", func(c *gin.Context) {
+
+		CORS(c)
+
+		c.JSON(http.StatusOK, gin.H{"code": "Hola vianca"})
+	})
+
 	router.Run(":" + port)
 
 }
